@@ -1,8 +1,16 @@
+"""Felhanterings modul för Phöz Rooms"""
+
 import difficulty
 from generation import Hole, Bats, Phoz, Treasure
-import map
+import phoz
 
-def select_admin():
+def select_admin() -> bool:
+    """Låter användaren välja om de vill köra programmet som Admin eller ej.
+        Argument:
+            admin(str): Valet användaren gör.
+        
+        Retunerar:
+            set_admin(bool): True / False"""
     admin = input("Would you like to run the game as admin? [Y]/[N]: ").upper()
     while True:
         if admin == "Y":
@@ -12,28 +20,50 @@ def select_admin():
         else:
             admin = input("Invalid option, try again: ").upper()
 
-def is_admin(isadmin):
+def is_admin(choice: str) -> bool:
+    """Används tillsammans med select_admin för att välja om programmet körs
+    som admin eller inte.
+        Argument:
+            choice(str): Valet från select_admin
+        Retunerar:
+            set_admin(bool): True / False"""
     global set_admin
-    if isadmin == "Y":
+    if choice == "Y":
         set_admin = True
     else:
         set_admin = False
-    isadmin = set_admin
-    return isadmin
+    return set_admin
 
-def map_is_empty(map, rand_x, rand_y):
+def map_is_empty(map: list, rand_x: int, rand_y: int) -> bool:
+    """Kollar om ett rum på kartan är tomm eller ej.
+        Argument:
+            map(list): Spelkartan
+            rand_x(int): Ett slumpmässigt tal eller heltal
+            rand_y(int): Ett slumpmässigt tal eller heltal
+        Retunerar:
+            True / False"""
     if map[rand_x][rand_y] == 0:
         return True
     else:
         return False
     
-def is_spawn_limit(MAPSIZE, START, PHOZ, HOLE, TREASURE, BATS):
-    if MAPSIZE**2 <= START + PHOZ + round(HOLE * 0.01 * MAPSIZE**2) + TREASURE + round(BATS * 0.01 * MAPSIZE**2):
+def is_spawn_limit(mapsize: int, start: int, phoz: int, hole: int, treasure: int, bats: int) -> bool:
+    """Kollar om mängden kartobjekt överstiger storleken på kartan.
+        Argument:
+            mapsize(int): Storleken på kartan
+            start(int): Mängden "startpoints"
+            phoz(int): Mängden phöz
+            hole(int): Mängden hål
+            treasure(int): Mängden skatt
+            bats(int): Mängden fladdermöss
+        Retunerar
+            True / False"""
+    if mapsize**2 <= start + phoz + round(hole * 0.01 * mapsize**2) + treasure + round(bats * 0.01 * mapsize**2):
         return False
     else:
         return True
     
-def is_inbounce(current_col, current_row, mapsize):
+def is_inbounce(current_col: int, current_row: int, mapsize: int) -> tuple[bool, bool, bool, bool]:
     """Kollar vilka håll spelaren kan röra sig till.
     
         Argument:
@@ -52,19 +82,15 @@ def is_inbounce(current_col, current_row, mapsize):
     north_isb = current_row > 0
     return west_isb, east_isb, north_isb, south_isb
 
-def is_phoz(current_row, current_col, game_map, admin):
-    if admin:
-        print("DEBUGG: Running is_phoz")
-    for row_i, slot in enumerate(game_map):
-        if "P" in slot:
-            col_i = slot.index("P")
-            if admin:
-                print(f"DEBUGG: Phöz is in {row_i, col_i}")
-                print(f"DEBUGG: checked {abs(current_row - row_i)}, {abs(current_col - col_i)}")
-            if 0 <= abs(current_row - row_i) < 2 and 0 <= abs(current_col - col_i) < 2:
-                print("Du kan höra gtymtningar och rosslingar...")
-
-def is_valid_direction(west_isb, east_isb, north_isb, south_isb, admin):
+def is_valid_direction(west_isb: bool, east_isb: bool, north_isb: bool, south_isb: bool, admin: bool) -> str:
+    """Frågar vart spelaren vill röra sig åt och kollar om det är innanför spelbanan.
+        Argument:
+            west_isb(Bool): Ok att gå väst
+            east_isb(Bool): Ok att gå öst
+            south_isb(Bool): Ok att gå söder
+            north_isb(Bool): Ok att gå norr
+        Retunerar:
+            goto(str): Ett val som är ok."""
     global instance
     goto = input("Move to: ").upper()
     while True:
@@ -84,11 +110,24 @@ def is_valid_direction(west_isb, east_isb, north_isb, south_isb, admin):
             return goto
         else:
             goto = input("Cannot move in that direction! \nTry again: ").upper()
-def retrieve_instance(game_map):
+
+def retrieve_instance(game_map) -> None:
+    """Hämtar spelkarts instansen för att lättare använda den inom modulen"""
     global instance
     instance = game_map
 
-def is_item(movement_inst, map, new_row, new_col, mapsize):
+def is_item(movement_inst, map: list, new_row: int, new_col: int, mapsize: int, admin: bool, diff: str) -> None:
+    """Kollar om spelaren har gått till ett kartobjekt, och kallar isåfall på
+    objektets funktion.
+        Argument:
+            movement_inst(instance): Instansen för movement klassen
+            map(list): Spelkartan
+            new_row(int): Den nya raden som spelaren vill gå till
+            new_col(int): Den nya kolumnen som spelaren vill gå till
+            mapsize(int): Kartstorleken
+            admin(bool): Spelaren är admin eller ej
+        Retunerar:
+            None"""
     if set_admin:
         print("DEBUGG: Running is_item")
     items = ("H", "B", "P", "T")
@@ -108,16 +147,28 @@ def is_item(movement_inst, map, new_row, new_col, mapsize):
         if item in ("B", "T", "P"):
             if set_admin:
                 print(f"DEBUGG: Calling {item}!")
-            call_item(map, mapsize, new_row, new_col, set_admin)
+            call_item(map, mapsize, new_row, new_col, set_admin, diff)
         else:
             if set_admin:
                 print("DEBUGG: Calling item which is not B or T")
             call_item()
     else:
         print("No items in this room!")
-        movement_inst.ask_direction()
+        phoz.is_phoz(new_row, new_col, map, admin, mapsize, movement_inst)
+        phoz_status = phoz.is_phoz_dead(map)
+        if phoz_status:
+            phoz.game_over(diff)
+            return
+        else:
+            movement_inst.ask_direction()
         
-def choice_diff(diff):
+def choice_diff(diff: str) -> tuple:
+    """Sätter svårighetsgraden
+        Argument:
+            diff(str): Valet som spelaren valt
+        
+        Retunerar:
+            set_diff(tuple): En tuple med attribut för respektive svårighetsgrad"""
     while True:
         if diff == "E":
             set_diff = difficulty.easy
@@ -133,9 +184,16 @@ def choice_diff(diff):
             break
         else:
             diff = input("Invalid choice, try again: ").upper()
-    return set_diff
+    return set_diff, diff
 
-def rto_menu():
+def rto_menu() -> bool:
+    """Frågar om spelaren vill gå tillbaka till menyn eller
+    avsluta programmet.
+        Argument:
+            choice(str): Valet spelar valt
+        
+        Retunerar:
+            True / False"""
     print("-----------------------------")
     choice = input("Return to menu or quit? [R]/[Q]: ").upper()
     while True:
