@@ -89,12 +89,14 @@ def is_item(get_admin: object, game_map: list[list[str]], row: int, col: int, ma
             print(f"{Fore.BLUE}[DEBUGG]{Style.RESET_ALL} No item in this room.")
         if phoz.is_alive():
             if phoz.is_near(movement_inst.current_row, movement_inst.current_col):
-                gui.set_message("Du kan höra gtymtningar och rosslingar...", 0.75)
+                gui.set_message("Du kan höra gtymtningar och rosslingar...", 300)
                 print(f"{Fore.BLUE}[DEBUGG]{Style.RESET_ALL} Shots taken: {phoz.shots_taken}")
                 if phoz.shots_taken < 6:
                     weapon_inst = weapon.Heineken(movement_inst.current_row, movement_inst.current_col, gui, mapsize, phoz)
                     phoz.shots_taken += 1
                     gui.phoz_near(weapon_inst, weapon_inst.shots)
+                else:
+                    gui.set_message("Du har inga flaskor kvar...", 0.75)
             else:
                 gui.ask_directions()
         
