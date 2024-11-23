@@ -28,9 +28,9 @@ class Gui(tk.Tk):
         self.geometry("1920x1080")
         self.main_menu()
     
-    def set_title(self, text: str):
-        self.title_text = tk.Label(self, text=text, font=("Helvetica", 36))
-        self.title_text.pack(pady=20)
+    def set_title(self, text: str, ypos: int = 20, size: int = 36):
+        self.title_text = tk.Label(self, text=text, font=("Helvetica", size))
+        self.title_text.pack(pady=ypos)
     
     def cont_button(self, command: str):
         self.continue_bt = tk.Button(self, text="Continue", width=15, command = command, font=("Helvetica", 18))
@@ -40,13 +40,15 @@ class Gui(tk.Tk):
         self.button = tk.Button(self, text=name, width=width, command = command, font=("Helvetica", 18))
         self.button.pack(pady=posy)
 
-    def set_render(self, render: str, x_pos: float = 0.5, y_pos: float = 0.65):
+    def set_render(self, render: str, x_pos: float = 0.5, y_pos: float = 100):
+        width = int(self.s_width * 0.5)
+        height = int(width / self.aspect_r)
         if self.get_admin.is_admin:
             print(f"{Fore.BLUE}[DEBUGG]{Style.RESET_ALL} Setting render to {render}")
         image = Image.open(f"renders/render{render}.png")
-        self.re_image = ImageTk.PhotoImage(image.resize((960, 540)))
+        self.re_image = ImageTk.PhotoImage(image.resize((width, height)))
         self.photo = tk.Label(self, image=self.re_image)
-        self.photo.place(relx=x_pos, rely=y_pos, anchor="s")
+        self.photo.pack(padx = x_pos, pady = y_pos, anchor="s")
     
     def set_message(self, message: str, ypos: float = 0.8):
         self.message = tk.Label(self, text=message, font=("Helvetica", 26))
@@ -79,6 +81,10 @@ class Gui(tk.Tk):
                 i.destroy()
             
     def main_menu(self):
+        self.update_idletasks()
+        self.s_width = self.winfo_width()
+        self.s_height = self.winfo_height()
+        self.aspect_r = float(16 / 9)
         self.clear_screen()
         self.stop_sound()
         self.file_menu()
@@ -94,32 +100,31 @@ class Gui(tk.Tk):
          # Sound
         self.play_sound("phoz_maintheme")
 
-         # Title
-        self.set_title("Välkommen till Phöz mindre urusla spel")
-
          # Images
         image = Image.open("renders/render22.png")
-        self.re_image = ImageTk.PhotoImage(image.resize((760, 640)))
+        self.re_image = ImageTk.PhotoImage(image.resize((int(self.s_width*0.4), int(self.s_height*0.7))))
         self.photo1 = tk.Label(self, image=self.re_image)
         self.photo2 = tk.Label(self, image=self.re_image)
         self.photo1.place(relx=0.1, rely=0.75, anchor="s")
         self.photo2.place(relx=0.9, rely=0.75, anchor="s")
+
+         # Title
+        self.set_title("Välkommen till Phöz mindre urusla spel")
 
          # Buttons
         self.new_game_button = tk.Button(self, text="New Game", width=20, font=("Helvetica", 18), command=self.name_menu)
         self.exit_button = tk.Button(self, text="Exit", width=20, font=("Helvetica", 18), command=self.quit)
 
          # Place Buttons
-        self.new_game_button.place(relx=0.5, rely=0.2, anchor="s")
-        self.exit_button.place(relx=0.5, rely=0.3, anchor="s")
+        self.new_game_button.pack(pady = 40)
+        self.exit_button.pack(pady = 0)
 
          # Scoreboard Title
-        self.scores_label = tk.Label(self, text="Top 10 Minst Urusla Spelare", font=("Helvetica", 24, "bold"))
-        self.scores_label.place(relx=0.5, rely=0.4, anchor="s")
+        self.set_title("Top 10 Minst Urusla Spelare", 40, 24)
 
          # Scoreboard Frame
         self.scoreboard_frame = tk.Frame(self)
-        self.scoreboard_frame.place(relx=0.5, rely=0.75, anchor="s")
+        self.scoreboard_frame.place(relx = 0.5, y = self.s_height * 0.65, anchor="s")
 
          # Top 10 scores for each difficulty
         self.difficulties_scores = {
@@ -234,7 +239,7 @@ class Gui(tk.Tk):
         self.set_title(f"Current room: {self.movement_inst.current_room}")
         self.set_render(failsafe.is_render(self.movement_inst.current_row,
         self.movement_inst.current_col, self.movement_inst.mapsize,
-        str(self.game_map[self.movement_inst.current_row][self.movement_inst.current_col])))
+        str(self.game_map[self.movement_inst.current_row][self.movement_inst.current_col])), 0, 0)
         west, east, north, south = self.movement_inst.ask_direction()
         if north:
             self.button_n = tk.Button(self, text="North", width=15, command=lambda: self.movement_inst.move("N", self))
@@ -255,7 +260,7 @@ class Gui(tk.Tk):
         self.set_message("Du kan höra grymtningar och rosslingar...", 0.75)
         self.set_render(failsafe.is_render(self.movement_inst.current_row,
         self.movement_inst.current_col, self.movement_inst.mapsize,
-        str(self.game_map[self.movement_inst.current_row][self.movement_inst.current_col])))
+        str(self.game_map[self.movement_inst.current_row][self.movement_inst.current_col])), 0, 0)
         self.cont_button(lambda: self.shoot_directions(weapon, shots))
 
     def phoz_hit(self, hit, phoz, phoz_row = 0, phoz_col = 0):
@@ -263,7 +268,7 @@ class Gui(tk.Tk):
         self.set_title(f"Current room: {self.movement_inst.current_room}")
         self.set_render(failsafe.is_render(self.movement_inst.current_row,
         self.movement_inst.current_col, self.movement_inst.mapsize,
-        str(self.game_map[self.movement_inst.current_row][self.movement_inst.current_col])))
+        str(self.game_map[self.movement_inst.current_row][self.movement_inst.current_col])), 0, 0)
         if hit:
             self.set_message("Heineken träffade phöz!", 0.75)
             self.movement_inst.overwrite(phoz_row, phoz_col)
@@ -283,7 +288,7 @@ class Gui(tk.Tk):
         self.set_message(f"Throw {shots} / 3", 0.75)
         self.set_render(failsafe.is_render(self.movement_inst.current_row,
         self.movement_inst.current_col, self.movement_inst.mapsize,
-        str(self.game_map[self.movement_inst.current_row][self.movement_inst.current_col])))
+        str(self.game_map[self.movement_inst.current_row][self.movement_inst.current_col])), 0, 0)
         west, east, north, south = weapon.ask_direction()
         if north:
             self.button_n = tk.Button(self, text="North", width=15, command=lambda: weapon.shoot("N"))
@@ -301,13 +306,19 @@ class Gui(tk.Tk):
     def gameover(self, message):
         self.clear_screen()
         self.stop_sound()
+        self.set_title("URUSELT NOLLAN!")
         self.set_message(message)
-        self.set_render("21")
+        self.set_render("21", 0, 0)
         self.play_sound("dead")
         self.cont_button(self.main_menu)
     
     def victory(self):
         self.clear_screen()
         self.stop_sound()
-        self.set_message("Phöz är elimenerad, för nu...")
-        scoreboard.set_score(self.difficulty, scoreboard.final_score(), self.playername)
+        self.set_title("MINDRE URUSELT!")
+        self.set_message("Phöz är elimenerad, för nu...", 0.5)
+        if self.get_admin.is_admin:
+            print(f"{Fore.BLUE}[DEBUGG]{Style.RESET_ALL} Admin set to True, skipping save.")
+        else:
+            scoreboard.set_score(self.difficulty, scoreboard.final_score(), self.playername)
+        self.cont_button(self.main_menu)
