@@ -115,7 +115,7 @@ class Phoz(Generation):
         self.gui.set_message("HMMMMM... VAD HAR NOLLAN DÄRRR NOLLAN?!")
         self.gui.set_message("HAR NOLLAN EN GYLLENDE BÄSK NOLLAN?!", 0.85)
 
-        self.gui.set_button(self.page5, "Ge Phöz den Gyllende bäsken", 400, 40)
+        self.gui.set_button(self.page5, "Ge Phöz den Gyllende bäsken", width = 40)
     
     def page5(self):
         global found_treasure
